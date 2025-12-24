@@ -1,0 +1,163 @@
+// --- CONFIGURAÇÕES DA API (VERSÃO SEGURA - SEM CHAVE!) ---
+
+// MUDANÇA CRÍTICA 1: Não temos mais API_KEY aqui!
+
+// MUDANÇA CRÍTICA 2: As URLs agora apontam para o NOSSO servidor Vercel (pasta /api)
+// Em vez de https://api.themoviedb.org..., usamos apenas o caminho relativo:
+const BASE_URL_BUSCA = '/api/busca'; // Aponta para api/busca.js
+const BASE_URL_DETALHES = '/api/detalhes'; // Aponta para api/detalhes.js
+
+// Essa continua igual, pois imagens não precisam de chave
+const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+
+
+// --- PEGANDO OS ELEMENTOS DO HTML (Igual) ---
+const searchForm = document.getElementById('search-form');
+const searchInput = document.getElementById('search-input');
+const resultsContainer = document.getElementById('results-container');
+const modalOverlay = document.getElementById('modal-overlay');
+const closeModalBtn = document.getElementById('close-modal-btn');
+const modalMovieTitle = document.getElementById('modal-movie-title');
+const streamingProvidersContainer = document.getElementById('streaming-providers');
+
+
+// --- OUVINTES DE EVENTOS (Igual) ---
+searchForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+    const termoBuscado = searchInput.value;
+    if (termoBuscado.trim() !== "") {
+        buscarConteudo(termoBuscado);
+    }
+});
+
+closeModalBtn.addEventListener('click', fecharModal);
+modalOverlay.addEventListener('click', function(event) {
+    if (event.target === modalOverlay) {
+        fecharModal();
+    }
+});
+
+
+// --- FUNÇÕES AUXILIARES (Igual) ---
+function abrirModal() {
+    modalOverlay.classList.remove('hidden');
+}
+
+function fecharModal() {
+    modalOverlay.classList.add('hidden');
+    streamingProvidersContainer.innerHTML = '<p>Carregando opções...</p>';
+    modalMovieTitle.textContent = '';
+}
+
+
+// --- FUNÇÃO PRINCIPAL DE BUSCA (Atualizada para usar nosso backend) ---
+async function buscarConteudo(termo) {
+    // MUDANÇA 3: A URL agora é simples, chamamos nosso backend passando o termo 'q'
+    const urlDoPedido = `${BASE_URL_BUSCA}?q=${encodeURIComponent(termo)}`;
+
+    try {
+        resultsContainer.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Buscando na cozinha...</p>';
+        const resposta = await fetch(urlDoPedido);
+        if (!resposta.ok) throw new Error('Erro ao buscar conteúdo');
+        const dados = await resposta.json();
+
+        // O backend já traz tudo, filtramos aqui no front
+        const resultadosFiltrados = dados.results.filter(item => item.media_type === 'movie' || item.media_type === 'tv');
+
+        mostrarResultados(resultadosFiltrados);
+
+    } catch (erro) {
+        console.error(erro);
+        resultsContainer.innerHTML = '<p style="text-align:center; color: red; grid-column: 1/-1;">Ops! Algo deu errado na busca.</p>';
+    }
+}
+
+
+// --- FUNÇÃO QUE MOSTRA OS PÔSTERES (Igual) ---
+function mostrarResultados(listaDeItens) {
+    resultsContainer.innerHTML = '';
+
+    if (listaDeItens.length === 0) {
+        resultsContainer.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Nenhum filme ou série encontrado.</p>';
+        return;
+    }
+
+    listaDeItens.forEach(item => {
+        if(item.poster_path) {
+            const movieCard = document.createElement('div');
+            movieCard.classList.add('movie-card');
+
+            const tituloCorreto = item.title || item.name;
+
+            movieCard.addEventListener('click', function() {
+                modalMovieTitle.textContent = tituloCorreto;
+                abrirModal();
+                buscarOndeAssistir(item.id, item.media_type);
+            });
+
+            const posterImg = document.createElement('img');
+            posterImg.src = IMAGE_BASE_URL + item.poster_path;
+            posterImg.alt = `Pôster de ${tituloCorreto}`;
+
+            const movieTitle = document.createElement('h3');
+            movieTitle.textContent = tituloCorreto;
+
+            movieCard.appendChild(posterImg);
+            movieCard.appendChild(movieTitle);
+            resultsContainer.appendChild(movieCard);
+        }
+    });
+}
+
+
+// --- FUNÇÃO: BUSCAR ONDE ASSISTIR (Atualizada para usar nosso backend) ---
+async function buscarOndeAssistir(contentId, mediaType) {
+
+    // MUDANÇA 4: Chamamos nosso backend passando ID e TYPE na URL
+    const urlProvider = `${BASE_URL_DETALHES}?id=${contentId}&type=${mediaType}`;
+
+    try {
+        const resposta = await fetch(urlProvider);
+        if (!resposta.ok) throw new Error('Erro ao buscar providers');
+        const dados = await resposta.json();
+
+        // O resto da lógica continua igual, pois os dados chegam no mesmo formato
+        if (dados.results && dados.results.BR) {
+            const opcoesBR = dados.results.BR.flatrate || dados.results.BR.rent;
+
+            if (opcoesBR && opcoesBR.length > 0) {
+                mostrarLogosStreamings(opcoesBR);
+            } else {
+                streamingProvidersContainer.innerHTML = '<p>Não encontrado em serviços populares no Brasil no momento.</p>';
+            }
+
+        } else {
+            streamingProvidersContainer.innerHTML = '<p>Informações de streaming não disponíveis para o Brasil.</p>';
+        }
+
+    } catch (erro) {
+        console.error(erro);
+        streamingProvidersContainer.innerHTML = '<p>Erro ao carregar opções de streaming.</p>';
+    }
+}
+
+
+// --- FUNÇÃO: DESENHAR OS LOGOS (Igual) ---
+function mostrarLogosStreamings(listaStreamings) {
+    streamingProvidersContainer.innerHTML = '';
+    listaStreamings.forEach(streaming => {
+        const providerItem = document.createElement('div');
+        providerItem.classList.add('provider-item');
+
+        const logoImg = document.createElement('img');
+        logoImg.src = IMAGE_BASE_URL + streaming.logo_path;
+        logoImg.alt = `Logo ${streaming.provider_name}`;
+
+        const providerName = document.createElement('span');
+        providerName.textContent = streaming.provider_name;
+
+        providerItem.appendChild(logoImg);
+        providerItem.appendChild(providerName);
+        streamingProvidersContainer.appendChild(providerItem);
+    });
+}
