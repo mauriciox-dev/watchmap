@@ -1,15 +1,15 @@
 // --- CONFIGURAÇÕES DA API (VERSÃO SEGURA - SEM CHAVE!) ---
-
-// MUDANÇA CRÍTICA 1: Não temos mais API_KEY aqui!
-
-// MUDANÇA CRÍTICA 2: As URLs agora apontam para o NOSSO servidor Vercel (pasta /api)
-// Em vez de https://api.themoviedb.org..., usamos apenas o caminho relativo:
-const BASE_URL_BUSCA = '/api/busca'; // Aponta para api/busca.js
-const BASE_URL_DETALHES = '/api/detalhes'; // Aponta para api/detalhes.js
-
-// Essa continua igual, pois imagens não precisam de chave
+const BASE_URL_BUSCA = '/api/busca';
+const BASE_URL_DETALHES = '/api/detalhes';
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
+// --- NOVO: O HTML DO SPINNER ---
+const LOADING_SPINNER_HTML = `
+    <div class="spinner-container">
+        <div class="loading-spinner"></div>
+    </div>
+`;
+// -------------------------------
 
 // --- PEGANDO OS ELEMENTOS DO HTML (Igual) ---
 const searchForm = document.getElementById('search-form');
@@ -56,7 +56,8 @@ async function buscarConteudo(termo) {
     const urlDoPedido = `${BASE_URL_BUSCA}?q=${encodeURIComponent(termo)}`;
 
     try {
-        resultsContainer.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Buscando na cozinha...</p>';
+    resultsContainer.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Buscando na cozinha...</p>';
+
         const resposta = await fetch(urlDoPedido);
         if (!resposta.ok) throw new Error('Erro ao buscar conteúdo');
         const dados = await resposta.json();

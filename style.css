@@ -285,3 +285,38 @@ footer {
     margin-top: 5px;
     font-weight: 600;
 }
+/* --- ANIMAÇÃO DE CARREGAMENTO (SPINNER) --- */
+
+/* O container que segura o spinner e o centraliza na tela */
+.spinner-container {
+    grid-column: 1 / -1; /* Faz ocupar a largura total da grade de resultados */
+    display: flex;
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center;
+    padding: 50px 0; /* Um pouco de espaço acima e abaixo */
+}
+
+/* A rodinha em si */
+.loading-spinner {
+    width: 50px; /* Tamanho da rodinha */
+    height: 50px;
+    /* Cria uma borda cinza clarinha em volta de tudo */
+    border: 5px solid rgba(0, 0, 0, 0.1);
+    /* Pinta SÓ a borda de cima com a cor vermelha do nosso site */
+    border-top-color: var(--color-watch-red);
+    /* Transforma o quadrado em um círculo perfeito */
+    border-radius: 50%;
+    /* Aplica a animação de girar definida abaixo */
+    /* nome-da-animação | tempo | tipo-de-movimento | repetição */
+    animation: spin 1s linear infinite;
+}
+
+/* Define COMO a animação acontece (girar de 0 a 360 graus) */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
