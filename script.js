@@ -55,10 +55,12 @@ async function buscarConteudo(termo) {
     // MUDANÇA 3: A URL agora é simples, chamamos nosso backend passando o termo 'q'
     const urlDoPedido = `${BASE_URL_BUSCA}?q=${encodeURIComponent(termo)}`;
 
-    try {
-    resultsContainer.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Buscando na cozinha...</p>';
+try {
+    // MUDANÇA AQUI: Usamos a constante do spinner em vez do texto
+    resultsContainer.innerHTML = LOADING_SPINNER_HTML;
 
-        const resposta = await fetch(urlDoPedido);
+    const resposta = await fetch(urlDoPedido);
+    // ... resto do código
         if (!resposta.ok) throw new Error('Erro ao buscar conteúdo');
         const dados = await resposta.json();
 
