@@ -10,6 +10,9 @@ const LOADING_SPINNER_HTML = `
     </div>
 `;
 // -------------------------------
+// --- PLACEHOLDER ---
+const PLACEHOLDER_IMG_URL = 'https://placehold.co/500x750/333/999?text=Sem+P%C3%B4ster&font=monserrat';
+// ----------------------------------
 
 // --- PEGANDO OS ELEMENTOS DO HTML (Igual) ---
 const searchForm = document.getElementById('search-form');
@@ -76,7 +79,7 @@ try {
 }
 
 
-// --- FUNÇÃO QUE MOSTRA OS PÔSTERES (Igual) ---
+// --- FUNÇÃO QUE MOSTRA OS PÔSTERES (ATUALIZADA COM PLACEHOLDER) ---
 function mostrarResultados(listaDeItens) {
     resultsContainer.innerHTML = '';
 
@@ -86,32 +89,42 @@ function mostrarResultados(listaDeItens) {
     }
 
     listaDeItens.forEach(item => {
-        if(item.poster_path) {
-            const movieCard = document.createElement('div');
-            movieCard.classList.add('movie-card');
+        // NOTA: Removemos o "if(item.poster_path)" que tinha aqui antes.
 
-            const tituloCorreto = item.title || item.name;
+        const movieCard = document.createElement('div');
+        movieCard.classList.add('movie-card');
 
-            movieCard.addEventListener('click', function() {
-                modalMovieTitle.textContent = tituloCorreto;
-                abrirModal();
-                buscarOndeAssistir(item.id, item.media_type);
-            });
+        const tituloCorreto = item.title || item.name;
 
-            const posterImg = document.createElement('img');
+        movieCard.addEventListener('click', function() {
+            modalMovieTitle.textContent = tituloCorreto;
+            abrirModal();
+            buscarOndeAssistir(item.id, item.media_type);
+        });
+
+        const posterImg = document.createElement('img');
+
+        // --- AQUI ESTÁ A MÁGICA DO PLACEHOLDER ---
+        // Se o item TEM um pôster oficial...
+        if (item.poster_path) {
+            // ... usamos a imagem do TMDB.
             posterImg.src = IMAGE_BASE_URL + item.poster_path;
-            posterImg.alt = `Pôster de ${tituloCorreto}`;
-
-            const movieTitle = document.createElement('h3');
-            movieTitle.textContent = tituloCorreto;
-
-            movieCard.appendChild(posterImg);
-            movieCard.appendChild(movieTitle);
-            resultsContainer.appendChild(movieCard);
+        } else {
+            // ... caso contrário (se for null ou vazio), usamos nossa imagem genérica.
+            posterImg.src = PLACEHOLDER_IMG_URL;
         }
+        // -----------------------------------------
+
+        posterImg.alt = `Pôster de ${tituloCorreto}`;
+
+        const movieTitle = document.createElement('h3');
+        movieTitle.textContent = tituloCorreto;
+
+        movieCard.appendChild(posterImg);
+        movieCard.appendChild(movieTitle);
+        resultsContainer.appendChild(movieCard);
     });
 }
-
 
 // --- FUNÇÃO: BUSCAR ONDE ASSISTIR (Atualizada para usar nosso backend) ---
 async function buscarOndeAssistir(contentId, mediaType) {
