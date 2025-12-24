@@ -320,3 +320,28 @@ footer {
         transform: rotate(360deg);
     }
 }
+/* --- ESTILOS DO NOVO MODAL (NÍVEL 3) --- */
+
+/* A caixinha que segura o Ano e a Nota */
+.modal-metadata {
+    display: flex;
+    align-items: center; /* Alinha verticalmente o texto com a estrela */
+    gap: 10px; /* Espaço entre o ano, o pontinho e a nota */
+    color: #aaa; /* Uma cor cinza mais clara para não brigar com o título */
+    font-size: 0.9rem; /* Um pouco menor que o texto normal */
+    margin-top: -10px; /* Puxa um pouco pra cima, pra perto do título */
+    margin-bottom: 15px; /* Empurra a sinopse pra baixo */
+}
+
+/* Estilo específico para a área da nota e da estrela */
+#modal-rating {
+    color: #FFD700; /* Cor "Dourado" (Gold) para destacar a nota */
+    font-weight: bold;
+}
+
+/* Estilo da sinopse (o texto corrido) */
+#modal-overview {
+    line-height: 1.6; /* Aumenta o espaço entre as linhas para facilitar a leitura */
+    font-size: 0.95rem;
+    margin-bottom: 20px; /* Espaço antes da linha horizontal */
+}

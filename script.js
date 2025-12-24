@@ -3,28 +3,33 @@ const BASE_URL_BUSCA = '/api/busca';
 const BASE_URL_DETALHES = '/api/detalhes';
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
-// --- NOVO: O HTML DO SPINNER ---
+// --- O HTML DO SPINNER (Carregamento) ---
 const LOADING_SPINNER_HTML = `
     <div class="spinner-container">
         <div class="loading-spinner"></div>
     </div>
 `;
-// -------------------------------
-// --- PLACEHOLDER ---
-const PLACEHOLDER_IMG_URL = 'https://placehold.co/500x750/333/999?text=Sem+P%C3%B4ster&font=monserrat';
-// ----------------------------------
 
-// --- PEGANDO OS ELEMENTOS DO HTML (Igual) ---
+// --- URL DA IMAGEM GENÉRICA (Placeholder) ---
+const PLACEHOLDER_IMG_URL = 'https://placehold.co/500x750/333/999?text=Sem+P%C3%B4ster&font=monserrat';
+
+
+// --- PEGANDO OS ELEMENTOS DO HTML ---
 const searchForm = document.getElementById('search-form');
 const searchInput = document.getElementById('search-input');
 const resultsContainer = document.getElementById('results-container');
 const modalOverlay = document.getElementById('modal-overlay');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const modalMovieTitle = document.getElementById('modal-movie-title');
+// Novos elementos do modal (Nível 3)
+const modalYear = document.getElementById('modal-year');
+const modalRatingValue = document.getElementById('modal-rating-value');
+const modalOverview = document.getElementById('modal-overview');
+
 const streamingProvidersContainer = document.getElementById('streaming-providers');
 
 
-// --- OUVINTES DE EVENTOS (Igual) ---
+// --- OUVINTES DE EVENTOS ---
 searchForm.addEventListener('submit', function(event) {
     event.preventDefault();
     const termoBuscado = searchInput.value;
@@ -41,7 +46,7 @@ modalOverlay.addEventListener('click', function(event) {
 });
 
 
-// --- FUNÇÕES AUXILIARES (Igual) ---
+// --- FUNÇÕES AUXILIARES ---
 function abrirModal() {
     modalOverlay.classList.remove('hidden');
 }
@@ -50,24 +55,26 @@ function fecharModal() {
     modalOverlay.classList.add('hidden');
     streamingProvidersContainer.innerHTML = '<p>Carregando opções...</p>';
     modalMovieTitle.textContent = '';
+    // Limpa os dados novos ao fechar
+    modalYear.textContent = '';
+    modalRatingValue.textContent = '';
+    modalOverview.textContent = '';
 }
 
 
-// --- FUNÇÃO PRINCIPAL DE BUSCA (Atualizada para usar nosso backend) ---
+// --- FUNÇÃO PRINCIPAL DE BUSCA ---
 async function buscarConteudo(termo) {
-    // MUDANÇA 3: A URL agora é simples, chamamos nosso backend passando o termo 'q'
     const urlDoPedido = `${BASE_URL_BUSCA}?q=${encodeURIComponent(termo)}`;
 
-try {
-    // MUDANÇA AQUI: Usamos a constante do spinner em vez do texto
-    resultsContainer.innerHTML = LOADING_SPINNER_HTML;
+    try {
+        // Mostra o spinner antes de buscar
+        resultsContainer.innerHTML = LOADING_SPINNER_HTML;
 
-    const resposta = await fetch(urlDoPedido);
-    // ... resto do código
+        const resposta = await fetch(urlDoPedido);
         if (!resposta.ok) throw new Error('Erro ao buscar conteúdo');
         const dados = await resposta.json();
 
-        // O backend já traz tudo, filtramos aqui no front
+        // Filtra para mostrar apenas filmes e séries
         const resultadosFiltrados = dados.results.filter(item => item.media_type === 'movie' || item.media_type === 'tv');
 
         mostrarResultados(resultadosFiltrados);
@@ -79,7 +86,7 @@ try {
 }
 
 
-// --- FUNÇÃO QUE MOSTRA OS PÔSTERES (ATUALIZADA COM PLACEHOLDER) ---
+// --- FUNÇÃO QUE MOSTRA OS PÔSTERES ---
 function mostrarResultados(listaDeItens) {
     resultsContainer.innerHTML = '';
 
@@ -89,31 +96,40 @@ function mostrarResultados(listaDeItens) {
     }
 
     listaDeItens.forEach(item => {
-        // NOTA: Removemos o "if(item.poster_path)" que tinha aqui antes.
-
         const movieCard = document.createElement('div');
         movieCard.classList.add('movie-card');
 
         const tituloCorreto = item.title || item.name;
 
+        // --- Lógica do Clique no Cartão (Atualizada Nível 3) ---
         movieCard.addEventListener('click', function() {
+            // 1. Preenche o Título
             modalMovieTitle.textContent = tituloCorreto;
+
+            // 2. Lógica para o Ano
+            const dataBruta = item.release_date || item.first_air_date;
+            const anoApenas = dataBruta ? dataBruta.split('-')[0] : 'N/A';
+            modalYear.textContent = anoApenas;
+
+            // 3. Lógica para a Nota
+            modalRatingValue.textContent = item.vote_average ? item.vote_average.toFixed(1) : '?';
+
+            // 4. Lógica para a Sinopse
+            modalOverview.textContent = item.overview || "Sinopse não disponível para este título.";
+
+            // 5. Abre o modal e busca os streamings
             abrirModal();
             buscarOndeAssistir(item.id, item.media_type);
         });
 
         const posterImg = document.createElement('img');
 
-        // --- AQUI ESTÁ A MÁGICA DO PLACEHOLDER ---
-        // Se o item TEM um pôster oficial...
+        // --- Lógica do Placeholder (Nível 2) ---
         if (item.poster_path) {
-            // ... usamos a imagem do TMDB.
             posterImg.src = IMAGE_BASE_URL + item.poster_path;
         } else {
-            // ... caso contrário (se for null ou vazio), usamos nossa imagem genérica.
             posterImg.src = PLACEHOLDER_IMG_URL;
         }
-        // -----------------------------------------
 
         posterImg.alt = `Pôster de ${tituloCorreto}`;
 
@@ -126,10 +142,9 @@ function mostrarResultados(listaDeItens) {
     });
 }
 
-// --- FUNÇÃO: BUSCAR ONDE ASSISTIR (Atualizada para usar nosso backend) ---
-async function buscarOndeAssistir(contentId, mediaType) {
 
-    // MUDANÇA 4: Chamamos nosso backend passando ID e TYPE na URL
+// --- FUNÇÃO: BUSCAR ONDE ASSISTIR ---
+async function buscarOndeAssistir(contentId, mediaType) {
     const urlProvider = `${BASE_URL_DETALHES}?id=${contentId}&type=${mediaType}`;
 
     try {
@@ -137,7 +152,6 @@ async function buscarOndeAssistir(contentId, mediaType) {
         if (!resposta.ok) throw new Error('Erro ao buscar providers');
         const dados = await resposta.json();
 
-        // O resto da lógica continua igual, pois os dados chegam no mesmo formato
         if (dados.results && dados.results.BR) {
             const opcoesBR = dados.results.BR.flatrate || dados.results.BR.rent;
 
@@ -158,7 +172,7 @@ async function buscarOndeAssistir(contentId, mediaType) {
 }
 
 
-// --- FUNÇÃO: DESENHAR OS LOGOS (Igual) ---
+// --- FUNÇÃO: DESENHAR OS LOGOS ---
 function mostrarLogosStreamings(listaStreamings) {
     streamingProvidersContainer.innerHTML = '';
     listaStreamings.forEach(streaming => {

@@ -45,21 +45,26 @@
         <p>© 2026 WatchMap.</p>
     </footer>
 
-
-    <div id="modal-overlay" class="modal-overlay hidden">
+    <div id="modal-overlay" class="hidden">
         <div class="modal-content">
-            <span id="close-modal-btn" class="close-btn">&times;</span>
+            <span id="close-modal-btn">&times;</span>
+            
+            <h2 id="modal-movie-title"></h2>
 
-            <h2 id="modal-movie-title">Título do Filme</h2>
+            <div class="modal-metadata">
+                <span id="modal-year"></span>
+                <span>•</span> <span id="modal-rating">⭐ <span id="modal-rating-value"></span></span>
+            </div>
 
-            <h3>Disponível em:</h3>
-            <div id="streaming-providers" class="providers-grid">
+            <p id="modal-overview"></p>
+
+            <hr> <h3>Onde Assistir (Brasil):</h3>
+            <div id="streaming-providers">
                 <p>Carregando opções...</p>
             </div>
         </div>
     </div>
+
     <script src="script.js"></script>
-</body>
-</html>
 </body>
 </html>
