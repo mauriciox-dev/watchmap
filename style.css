@@ -198,66 +198,135 @@ footer {
     margin-top: 10px;
     font-weight: 600;
 }
-/* --- JANELA MODAL (POP-UP) --- */
 
-/* O fundo escuro semi-transparente */
-.modal-overlay {
-    position: fixed; /* Fica fixo na tela, mesmo rolando */
+
+/* --- ANIMAÇÃO DE CARREGAMENTO (SPINNER) --- */
+.spinner-container {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 0;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(0, 0, 0, 0.1);
+    border-top-color: var(--color-watch-red);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* --- JANELA MODAL (ESTRUTURA E CENTRALIZAÇÃO) --- */
+
+/* O fundo escuro que cobre a tela inteira */
+#modal-overlay {
+    position: fixed; /* Fixo na tela */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); /* Preto com 70% de transparência */
+    background-color: rgba(0, 0, 0, 0.7); /* Preto semi-transparente */
+    z-index: 1000; /* Fica na frente de tudo */
+
+    /* Centraliza o conteúdo */
     display: flex;
-    justify-content: center; /* Centraliza a janela no meio da tela */
+    justify-content: center;
     align-items: center;
-    z-index: 100; /* Garante que fique na frente de TUDO */
+    padding: 20px;
+    box-sizing: border-box;
     opacity: 1;
     transition: opacity 0.3s ease;
 }
 
-/* CLASSE PARA ESCONDER A JANELA (IMPORTANTE!) */
-/* O Javascript vai tirar e pôr essa classe para mostrar/esconder */
+/* Classe para esconder o modal */
 .hidden {
-    display: none;
+    display: none !important;
     opacity: 0;
     pointer-events: none;
 }
 
-/* A janela branca do conteúdo */
+/* A caixinha branca com o conteúdo */
 .modal-content {
-    background-color: white;
+    background-color: #fff;
     padding: 30px;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 500px; /* Largura máxima */
-    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
-    position: relative; /* Para posicionar o botão de fechar */
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px; /* Largura máxima para PC */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    position: relative;
     text-align: center;
+
+    /* Rolagem interna se o conteúdo for muito grande */
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
-/* O botão 'X' de fechar */
-.close-btn {
+/* O botão de fechar (X) */
+#close-modal-btn {
     position: absolute;
-    top: 10px;
-    right: 15px;
+    top: 15px;
+    right: 20px;
     font-size: 2rem;
-    font-weight: bold;
     color: #aaa;
     cursor: pointer;
-    transition: color 0.3s;
+    font-weight: bold;
+    line-height: 1;
 }
-.close-btn:hover {
-    color: var(--color-watch-red); /* Fica vermelho ao passar o mouse */
+
+#close-modal-btn:hover {
+    color: var(--color-watch-red);
 }
 
 #modal-movie-title {
-    margin-bottom: 20px;
+    margin-bottom: 10px; /* Espaço menor agora que tem os metadados */
     font-size: 1.5rem;
 }
 
+
+/* --- DETALHES DO MODAL (NÍVEL 3) --- */
+
+/* A caixinha que segura o Ano e a Nota */
+.modal-metadata {
+    display: flex;
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center;
+    gap: 10px;
+    color: #aaa;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+/* Estilo específico para a área da nota e da estrela */
+#modal-rating {
+    color: #FFD700; /* Dourado */
+    font-weight: bold;
+    display: flex; /* Garante que a estrela e o número fiquem alinhados */
+    align-items: center;
+    gap: 5px;
+}
+
+/* Estilo da sinopse */
+#modal-overview {
+    line-height: 1.6;
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+    text-align: left; /* Sinopse fica melhor alinhada à esquerda para leitura */
+}
+
+
 /* --- ÁREA DOS LOGOS DE STREAMING --- */
-.providers-grid {
+#streaming-providers {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -276,72 +345,13 @@ footer {
 .provider-item img {
     width: 60px;
     height: 60px;
-    border-radius: 12px; /* Bordas arredondadas nos logos (estilo iOS) */
+    border-radius: 12px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .provider-item span {
     font-size: 0.8rem;
-    margin-top: 5px;
+    margin-top: 8px;
     font-weight: 600;
-}
-/* --- ANIMAÇÃO DE CARREGAMENTO (SPINNER) --- */
-
-/* O container que segura o spinner e o centraliza na tela */
-.spinner-container {
-    grid-column: 1 / -1; /* Faz ocupar a largura total da grade de resultados */
-    display: flex;
-    justify-content: center; /* Centraliza horizontalmente */
-    align-items: center;
-    padding: 50px 0; /* Um pouco de espaço acima e abaixo */
-}
-
-/* A rodinha em si */
-.loading-spinner {
-    width: 50px; /* Tamanho da rodinha */
-    height: 50px;
-    /* Cria uma borda cinza clarinha em volta de tudo */
-    border: 5px solid rgba(0, 0, 0, 0.1);
-    /* Pinta SÓ a borda de cima com a cor vermelha do nosso site */
-    border-top-color: var(--color-watch-red);
-    /* Transforma o quadrado em um círculo perfeito */
-    border-radius: 50%;
-    /* Aplica a animação de girar definida abaixo */
-    /* nome-da-animação | tempo | tipo-de-movimento | repetição */
-    animation: spin 1s linear infinite;
-}
-
-/* Define COMO a animação acontece (girar de 0 a 360 graus) */
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-/* --- ESTILOS DO NOVO MODAL (NÍVEL 3) --- */
-
-/* A caixinha que segura o Ano e a Nota */
-.modal-metadata {
-    display: flex;
-    align-items: center; /* Alinha verticalmente o texto com a estrela */
-    gap: 10px; /* Espaço entre o ano, o pontinho e a nota */
-    color: #aaa; /* Uma cor cinza mais clara para não brigar com o título */
-    font-size: 0.9rem; /* Um pouco menor que o texto normal */
-    margin-top: -10px; /* Puxa um pouco pra cima, pra perto do título */
-    margin-bottom: 15px; /* Empurra a sinopse pra baixo */
-}
-
-/* Estilo específico para a área da nota e da estrela */
-#modal-rating {
-    color: #FFD700; /* Cor "Dourado" (Gold) para destacar a nota */
-    font-weight: bold;
-}
-
-/* Estilo da sinopse (o texto corrido) */
-#modal-overview {
-    line-height: 1.6; /* Aumenta o espaço entre as linhas para facilitar a leitura */
-    font-size: 0.95rem;
-    margin-bottom: 20px; /* Espaço antes da linha horizontal */
+    text-align: center;
 }
